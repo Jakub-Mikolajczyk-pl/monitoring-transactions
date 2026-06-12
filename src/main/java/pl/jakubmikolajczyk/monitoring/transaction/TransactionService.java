@@ -4,6 +4,7 @@ import java.time.InstantSource;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,11 +21,14 @@ public class TransactionService {
     private final TransactionRepository repository;
     private final CustomerService customers;
     private final InstantSource clock;
+    private final ApplicationEventPublisher events;
 
-    TransactionService(TransactionRepository repository, CustomerService customers, InstantSource clock) {
+    TransactionService(TransactionRepository repository, CustomerService customers,
+            InstantSource clock, ApplicationEventPublisher events) {
         this.repository = repository;
         this.customers = customers;
         this.clock = clock;
+        this.events = events;
     }
 
     @Transactional
@@ -40,13 +44,18 @@ public class TransactionService {
                     "Transaction businessId '%s' does not match customer businessId '%s'"
                             .formatted(businessId, customer.getBusinessId()));
         }
-        return repository.save(Transaction.register(
+        var transaction = repository.save(Transaction.register(
                 businessId,
                 request.customerId(),
                 request.amount(),
                 request.currency(),
                 request.transactionDate(),
                 clock));
+        // Published inside the ongoing transaction; AFTER_COMMIT listeners only run
+        // once this data is durable, so analysis can never observe uncommitted state
+        // and a rollback never triggers a phantom analysis (ADR-0006).
+        events.publishEvent(TransactionRegisteredEvent.of(transaction));
+        return transaction;
     }
 
     public List<Transaction> search(TransactionSearchCriteria criteria) {
