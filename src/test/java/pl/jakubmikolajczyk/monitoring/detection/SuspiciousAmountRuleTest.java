@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.UUID;
@@ -16,7 +17,9 @@ import pl.jakubmikolajczyk.monitoring.transaction.Transaction;
 class SuspiciousAmountRuleTest {
 
     private final SuspiciousAmountRule rule = new SuspiciousAmountRule(
-            new AmlProperties(new AmlProperties.SuspiciousAmount(new BigDecimal("2000.00"))));
+            new AmlProperties(
+                    new AmlProperties.SuspiciousAmount(new BigDecimal("2000.00")),
+                    new AmlProperties.HighFrequency(5, Duration.ofHours(1))));
 
     private Transaction transactionOf(String amount) {
         return Transaction.register("BANK_A", UUID.randomUUID(), new BigDecimal(amount), "PLN",

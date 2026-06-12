@@ -8,7 +8,7 @@ import pl.jakubmikolajczyk.monitoring.transaction.Transaction;
 /// auditable artefact - adding a rule should be an explicit, reviewable change to
 /// this very file, not a class appearing somewhere on the classpath (ADR-0007).
 /// Spring still discovers the implementations and injects them as a `List<AmlRule>`.
-public sealed interface AmlRule permits SuspiciousAmountRule {
+public sealed interface AmlRule permits SuspiciousAmountRule, HighFrequencyRule {
 
     RuleResult evaluate(Transaction transaction);
 }

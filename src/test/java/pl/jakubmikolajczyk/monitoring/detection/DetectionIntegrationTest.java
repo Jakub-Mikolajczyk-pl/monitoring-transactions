@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -17,7 +18,7 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 import com.jayway.jsonpath.JsonPath;
 
-/// End-to-end proof of REQ-08/REQ-09: registering a transaction returns
+/// End-to-end proof of REQ-08/REQ-09/REQ-10: registering a transaction returns
 /// immediately, and the alert materialises asynchronously (Awaitility, no sleeps).
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -89,5 +90,46 @@ class DetectionIntegrationTest {
                 assertThat(alertsFor(suspiciousId)).hasSize(1));
 
         assertThat(alertsFor(cleanId)).isEmpty();
+    }
+
+    @Test
+    void raisesHighFrequencyAlertOnSixthTransactionWithinTheHour() throws Exception {
+        String customerId = registerCustomer("DET_C");
+        var earlierIds = new ArrayList<String>();
+        for (int minute = 0; minute < 5; minute++) {
+            earlierIds.add(registerTransaction("DET_C", customerId, "10.00",
+                    "2026-06-01T14:0%d:00Z".formatted(minute)));
+        }
+
+        String sixthId = registerTransaction("DET_C", customerId, "10.00", "2026-06-01T14:30:00Z");
+
+        await().atMost(Duration.ofSeconds(5)).untilAsserted(() ->
+                assertThat(alertsFor(sixthId)).hasSize(1));
+        assertThat(alertsFor(sixthId).getFirst().get("reason")).isEqualTo("HIGH_FREQUENCY");
+
+        // Earlier transactions stay clean: each window is anchored to its own
+        // business time, so the sixth transaction (14:30) lies outside every earlier
+        // window even if those analyses ran late (ADR-0005).
+        for (String earlierId : earlierIds) {
+            assertThat(alertsFor(earlierId)).isEmpty();
+        }
+    }
+
+    @Test
+    void mergesAllViolatedRulesIntoOneAlert() throws Exception {
+        String customerId = registerCustomer("DET_D");
+        for (int minute = 0; minute < 5; minute++) {
+            registerTransaction("DET_D", customerId, "10.00",
+                    "2026-06-01T15:0%d:00Z".formatted(minute));
+        }
+
+        String suspiciousSixthId = registerTransaction("DET_D", customerId, "9999.99",
+                "2026-06-01T15:30:00Z");
+
+        await().atMost(Duration.ofSeconds(5)).untilAsserted(() ->
+                assertThat(alertsFor(suspiciousSixthId)).hasSize(1));
+
+        String reason = (String) alertsFor(suspiciousSixthId).getFirst().get("reason");
+        assertThat(reason.split(",")).containsExactlyInAnyOrder("SUSPICIOUS_AMOUNT", "HIGH_FREQUENCY");
     }
 }
