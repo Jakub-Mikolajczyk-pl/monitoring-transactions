@@ -1,0 +1,43 @@
+/* Design tokens (custom properties pierce Shadow DOM, so every component can use
+   them) + document-level reset. Component-level styles live in js/shared-styles.js
+   as a constructable stylesheet (ADR-0010). */
+:root {
+    --color-bg: #f4f6f8;
+    --color-surface: #ffffff;
+    --color-border: #d9dee5;
+    --color-text: #1c2733;
+    --color-text-muted: #5b6b7c;
+    --color-primary: #14467b;
+    --color-primary-hover: #0e3560;
+    --color-danger: #b3261e;
+    --color-success: #1e7d3e;
+    --color-open-bg: #fdecea;
+    --color-open-text: #b3261e;
+    --color-approved-bg: #e6f4ea;
+    --color-approved-text: #1e7d3e;
+    --color-rejected-bg: #eceff1;
+    --color-rejected-text: #455a64;
+    --color-banner-info-bg: #e8f0fe;
+    --color-banner-info-text: #174ea6;
+    --color-banner-warn-bg: #fdf3df;
+    --color-banner-warn-text: #8a5a00;
+    --color-banner-error-bg: #fdecea;
+    --color-banner-error-text: #b3261e;
+    --radius: 8px;
+    --shadow-card: 0 1px 2px rgb(16 24 40 / 0.06), 0 1px 3px rgb(16 24 40 / 0.10);
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font);
+    font-size: 15px;
+    line-height: 1.5;
+}
