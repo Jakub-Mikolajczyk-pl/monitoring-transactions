@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import pl.jakubmikolajczyk.monitoring.alert.dto.DecisionRequest;
+import pl.jakubmikolajczyk.monitoring.common.web.ConflictException;
 import pl.jakubmikolajczyk.monitoring.common.web.ResourceNotFoundException;
 
 @Service
@@ -18,10 +20,12 @@ public class AlertService {
     private static final Logger log = LoggerFactory.getLogger(AlertService.class);
 
     private final AlertRepository repository;
+    private final AlertDecisionRepository decisions;
     private final InstantSource clock;
 
-    AlertService(AlertRepository repository, InstantSource clock) {
+    AlertService(AlertRepository repository, AlertDecisionRepository decisions, InstantSource clock) {
         this.repository = repository;
+        this.decisions = decisions;
         this.clock = clock;
     }
 
@@ -37,6 +41,30 @@ public class AlertService {
         var alert = repository.save(Alert.raise(businessId, transactionId, reasons, clock));
         log.info("Alert {} raised for transaction {} with reasons {}",
                 alert.getId(), transactionId, alert.getReason());
+    }
+
+    /// Records the analyst's verdict (append-only) and moves the alert's status.
+    /// The client echoes the version it saw; a mismatch means somebody else decided
+    /// in the meantime -> 409, reload, re-decide (ADR-0008). The @Version bump at
+    /// flush additionally guards the race window between this check and the commit.
+    @Transactional
+    public AlertDecision decide(UUID alertId, DecisionRequest request) {
+        var alert = findById(alertId);
+        if (alert.getVersion() != request.alertVersion()) {
+            throw new ConflictException(
+                    "Alert %s changed since it was loaded (expected version %d, current %d); reload and decide again"
+                            .formatted(alertId, request.alertVersion(), alert.getVersion()));
+        }
+        alert.applyDecision(request.decision());
+        var decision = decisions.save(AlertDecision.of(
+                alertId, request.decision(), request.comment().strip(), clock));
+        log.info("Decision {} recorded for alert {} -> status {}",
+                request.decision(), alertId, alert.getStatus());
+        return decision;
+    }
+
+    public List<AlertDecision> decisionHistory(UUID alertId) {
+        return decisions.findAllByAlertIdOrderByCreatedAtDesc(alertId);
     }
 
     /// Optional status filter keeps the analyst's queue views (OPEN first) cheap.

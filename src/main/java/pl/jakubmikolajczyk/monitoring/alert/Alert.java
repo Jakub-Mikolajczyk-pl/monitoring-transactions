@@ -74,6 +74,13 @@ public class Alert {
                 joinedReasons, clock.instant());
     }
 
+    /// Applies the analyst's verdict (ADR-0008). The status always mirrors the
+    /// latest decision; the full history lives in alert_decisions. Hibernate's
+    /// dirty checking turns this into an UPDATE that also bumps the version.
+    public void applyDecision(Decision decision) {
+        this.status = decision.resultingStatus();
+    }
+
     public UUID getId() {
         return id;
     }

@@ -3,6 +3,7 @@ package pl.jakubmikolajczyk.monitoring.common.web;
 import java.util.Map;
 import java.util.Objects;
 
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -56,6 +57,19 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
         problem.setTitle("Invalid request");
+        return problem;
+    }
+
+    /// Lost-update protection (ADR-0008): either the client sent a stale version
+    /// (ConflictException) or two writes raced at flush time (JPA optimistic lock).
+    /// Both mean the same thing to the caller: reload and try again -> 409.
+    @ExceptionHandler({ConflictException.class, OptimisticLockingFailureException.class})
+    ProblemDetail handleConflict(RuntimeException ex) {
+        var detail = ex instanceof ConflictException
+                ? ex.getMessage()
+                : "The resource was modified concurrently; reload and retry";
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detail);
+        problem.setTitle("Concurrent modification");
         return problem;
     }
 }
