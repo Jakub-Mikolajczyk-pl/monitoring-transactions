@@ -46,7 +46,7 @@ odnotowane w README wraz ze ścieżką ewolucji.
 | REQ-01 | Dodanie klienta (§4.1) | `POST /api/customers` — `CustomerController` | `CustomerApiIntegrationTest` |
 | REQ-02 | Dodanie transakcji (§4.1) | `POST /api/transactions` — `TransactionController` | `TransactionApiIntegrationTest` |
 | REQ-03 | Przeglądanie list klientów, transakcji i alertów (§4.1) | `GET /api/customers`, `GET /api/transactions`, `GET /api/alerts` | testy integracyjne ww. modułów |
-| REQ-04 | Podgląd szczegółów alertu (§4.1) | `GET /api/alerts/{id}` — `AlertController` | `AlertApiIntegrationTest` |
+| REQ-04 | Podgląd szczegółów alertu (§4.1) | `GET /api/alerts/{id}` — `AlertController` | `AlertDecisionIntegrationTest` |
 | REQ-05 | Dodanie decyzji do alertu (§4.1, §4.5) | `POST /api/alerts/{id}/decisions` | `AlertDecisionIntegrationTest` |
 | REQ-06 | Filtrowanie transakcji: `businessId` (wymagane), `customerId` (opcjonalne), zakres dat (opcjonalny) (§4.2) | `GET /api/transactions` + `TransactionRepository` | `TransactionSearchIntegrationTest` |
 | REQ-07 | Po zapisie transakcji publikowany jest event `{eventId, businessId, transactionId}` (§4.3) | `TransactionRegisteredEvent` (rekord), publikacja w `TransactionService` | `TransactionEventTest` |
@@ -54,7 +54,7 @@ odnotowane w README wraz ze ścieżką ewolucji.
 | REQ-09 | Alert, gdy kwota przekroczy wartość z parametru, np. 2000 zł (§4.4) | `SuspiciousAmountRule` + `aml.rules.suspicious-amount.threshold` | `SuspiciousAmountRuleTest`, test integracyjny |
 | REQ-10 | Alert, gdy klient wykonał > 5 transakcji w ciągu 1 godziny (§4.4) | `HighFrequencyRule` + zapytanie po indeksie `(customer_id, transaction_date)` | `HighFrequencyRuleTest`, test integracyjny |
 | REQ-11 | Decyzje `APPROVE`/`REJECT`; każda zapisana jako **nowy wpis** (§4.5) | encja `AlertDecision` (append-only), status alertu = ostatnia decyzja | `AlertDecisionIntegrationTest` |
-| REQ-12 | Frontend: lista klientów, lista transakcji z filtrami, lista alertów, szczegóły alertu, historia decyzji, formularz decyzji (§5) | Web Components w `src/main/resources/static` | scenariusz manualny w README + smoke test |
+| REQ-12 | Frontend: lista klientów, lista transakcji z filtrami, lista alertów, szczegóły alertu, historia decyzji, formularz decyzji (§5) | Web Components w `src/main/resources/static` | smoke test manualny (README §5 pkt 2), wykonany przed oddaniem |
 | REQ-13 | README: uruchomienie, architektura, decyzje, użycie AI, weryfikacja poprawności (§7) | `README.md` | przegląd dokumentu |
 
 ## 5. Wymagania niefunkcjonalne (wywiedzione z treści i kontekstu bankowego)
