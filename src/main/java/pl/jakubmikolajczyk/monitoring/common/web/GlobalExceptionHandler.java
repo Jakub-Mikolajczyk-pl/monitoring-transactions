@@ -41,4 +41,21 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         problem.setTitle("Resource not found");
         return problem;
     }
+
+    /// Syntactically valid request breaking a domain consistency rule -> 422.
+    @ExceptionHandler(BusinessRuleViolationException.class)
+    ProblemDetail handleBusinessRuleViolation(BusinessRuleViolationException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        problem.setTitle("Business rule violated");
+        return problem;
+    }
+
+    /// Defensive-programming failures while handling a request (e.g. an inverted
+    /// date range in search criteria) are the caller's fault -> 400.
+    @ExceptionHandler(IllegalArgumentException.class)
+    ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage());
+        problem.setTitle("Invalid request");
+        return problem;
+    }
 }

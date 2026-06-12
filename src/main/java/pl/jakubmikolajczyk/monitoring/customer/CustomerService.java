@@ -2,6 +2,7 @@ package pl.jakubmikolajczyk.monitoring.customer;
 
 import java.time.InstantSource;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -39,5 +40,11 @@ public class CustomerService {
     public Customer findById(UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+    }
+
+    /// Cross-feature lookup that lets callers decide their own error semantics
+    /// (e.g. transaction registration maps a missing customer to 422, not 404).
+    public Optional<Customer> lookup(UUID id) {
+        return repository.findById(id);
     }
 }
