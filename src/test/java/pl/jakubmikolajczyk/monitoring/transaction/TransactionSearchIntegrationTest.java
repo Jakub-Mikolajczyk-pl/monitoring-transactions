@@ -66,9 +66,10 @@ class TransactionSearchIntegrationTest {
         var result = mvc.get().uri("/api/transactions?businessId=SRCH_A").exchange();
 
         assertThat(result).hasStatus(HttpStatus.OK);
-        assertThat(result).bodyJson().extractingPath("$.length()").isEqualTo(2);
-        assertThat(result).bodyJson().extractingPath("$[0].amount").isEqualTo(20.00);
-        assertThat(result).bodyJson().extractingPath("$[1].amount").isEqualTo(10.00);
+        assertThat(result).bodyJson().extractingPath("$.content.length()").isEqualTo(2);
+        assertThat(result).bodyJson().extractingPath("$.content[0].amount").isEqualTo(20.00);
+        assertThat(result).bodyJson().extractingPath("$.content[1].amount").isEqualTo(10.00);
+        assertThat(result).bodyJson().extractingPath("$.totalElements").isEqualTo(2);
     }
 
     @Test
@@ -83,8 +84,8 @@ class TransactionSearchIntegrationTest {
                 .exchange();
 
         assertThat(result).hasStatus(HttpStatus.OK);
-        assertThat(result).bodyJson().extractingPath("$.length()").isEqualTo(1);
-        assertThat(result).bodyJson().extractingPath("$[0].customerId").isEqualTo(first);
+        assertThat(result).bodyJson().extractingPath("$.content.length()").isEqualTo(1);
+        assertThat(result).bodyJson().extractingPath("$.content[0].customerId").isEqualTo(first);
     }
 
     @Test
@@ -100,8 +101,30 @@ class TransactionSearchIntegrationTest {
                 .exchange();
 
         assertThat(result).hasStatus(HttpStatus.OK);
-        assertThat(result).bodyJson().extractingPath("$.length()").isEqualTo(1);
-        assertThat(result).bodyJson().extractingPath("$[0].amount").isEqualTo(20.00);
+        assertThat(result).bodyJson().extractingPath("$.content.length()").isEqualTo(1);
+        assertThat(result).bodyJson().extractingPath("$.content[0].amount").isEqualTo(20.00);
+    }
+
+    @Test
+    void splitsResultsAcrossPagesAndCapsPageSize() throws Exception {
+        String customerId = registerCustomer("PAGE_A");
+        for (int day = 1; day <= 3; day++) {
+            registerTransaction("PAGE_A", customerId, "10.00", "2026-06-0%dT10:00:00Z".formatted(day));
+        }
+
+        var firstPage = mvc.get().uri("/api/transactions?businessId=PAGE_A&page=0&size=2").exchange();
+        assertThat(firstPage).bodyJson().extractingPath("$.content.length()").isEqualTo(2);
+        assertThat(firstPage).bodyJson().extractingPath("$.totalElements").isEqualTo(3);
+        assertThat(firstPage).bodyJson().extractingPath("$.totalPages").isEqualTo(2);
+        assertThat(firstPage).bodyJson().extractingPath("$.page").isEqualTo(0);
+
+        var secondPage = mvc.get().uri("/api/transactions?businessId=PAGE_A&page=1&size=2").exchange();
+        assertThat(secondPage).bodyJson().extractingPath("$.content.length()").isEqualTo(1);
+        assertThat(secondPage).bodyJson().extractingPath("$.page").isEqualTo(1);
+
+        // A client cannot defeat pagination by asking for everything: size is clamped.
+        var oversized = mvc.get().uri("/api/transactions?businessId=PAGE_A&size=1000000").exchange();
+        assertThat(oversized).bodyJson().extractingPath("$.size").isEqualTo(100);
     }
 
     @Test

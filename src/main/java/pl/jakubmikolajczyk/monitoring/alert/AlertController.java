@@ -1,10 +1,10 @@
 package pl.jakubmikolajczyk.monitoring.alert;
 
-import java.util.List;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +19,8 @@ import pl.jakubmikolajczyk.monitoring.alert.dto.AlertDetailsResponse;
 import pl.jakubmikolajczyk.monitoring.alert.dto.AlertResponse;
 import pl.jakubmikolajczyk.monitoring.alert.dto.DecisionRequest;
 import pl.jakubmikolajczyk.monitoring.alert.dto.DecisionResponse;
+import pl.jakubmikolajczyk.monitoring.common.web.PageResponse;
+import pl.jakubmikolajczyk.monitoring.common.web.Pages;
 import pl.jakubmikolajczyk.monitoring.customer.CustomerService;
 import pl.jakubmikolajczyk.monitoring.customer.dto.CustomerResponse;
 import pl.jakubmikolajczyk.monitoring.transaction.TransactionService;
@@ -39,8 +41,12 @@ class AlertController {
     }
 
     @GetMapping
-    List<AlertResponse> list(@RequestParam(required = false) AlertStatus status) {
-        return service.findAll(status).stream().map(AlertResponse::from).toList();
+    PageResponse<AlertResponse> list(
+            @RequestParam(required = false) AlertStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        var pageable = Pages.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return PageResponse.from(service.findAll(status, pageable).map(AlertResponse::from));
     }
 
     /// Composition endpoint for the analyst's detail view (REQ-04): the alert, the

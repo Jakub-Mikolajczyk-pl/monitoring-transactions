@@ -45,7 +45,7 @@ class CustomerApiIntegrationTest {
                         """)
                 .exchange();
 
-        var result = mvc.get().uri("/api/customers").exchange();
+        var result = mvc.get().uri("/api/customers?size=100").exchange();
 
         assertThat(result).hasStatus(HttpStatus.OK);
         assertThat(result.getMvcResult().getResponse().getContentAsString()).contains("LIST_CHECK");

@@ -14,6 +14,18 @@ export class ApiError extends Error {
     }
 }
 
+/** Builds a query string from an object, dropping null/undefined/empty values. */
+function query(params = {}) {
+    const search = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+        if (value !== null && value !== undefined && value !== '') {
+            search.set(key, value);
+        }
+    }
+    const serialized = search.toString();
+    return serialized ? `?${serialized}` : '';
+}
+
 async function request(path, options = {}) {
     const response = await fetch(path, {
         headers: { 'Content-Type': 'application/json' },
@@ -29,17 +41,18 @@ async function request(path, options = {}) {
     return body;
 }
 
+// List endpoints return a pagination envelope: { content, page, size, totalElements, totalPages }.
 export const api = {
     customers: {
-        list: () => request('/api/customers'),
+        list: (params) => request(`/api/customers${query(params)}`),
         create: (data) => request('/api/customers', { method: 'POST', body: JSON.stringify(data) }),
     },
     transactions: {
-        search: (params) => request(`/api/transactions?${new URLSearchParams(params)}`),
+        search: (params) => request(`/api/transactions${query(params)}`),
         create: (data) => request('/api/transactions', { method: 'POST', body: JSON.stringify(data) }),
     },
     alerts: {
-        list: (status) => request(`/api/alerts${status ? `?status=${status}` : ''}`),
+        list: (params) => request(`/api/alerts${query(params)}`),
         details: (id) => request(`/api/alerts/${id}`),
         decide: (id, data) => request(`/api/alerts/${id}/decisions`, {
             method: 'POST',

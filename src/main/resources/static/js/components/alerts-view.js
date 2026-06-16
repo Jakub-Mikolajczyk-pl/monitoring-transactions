@@ -1,5 +1,6 @@
 import { api } from '../api.js';
 import { esc, fmtDateTime, shortId } from '../format.js';
+import { renderPager, PAGE_SIZE } from '../pagination.js';
 
 // Analyst's queue: alerts filtered by status, newest first. Row click navigates
 // to the details route - state lives in the URL hash, so views stay stateless.
@@ -15,6 +16,7 @@ const STATUS_TABS = [
 class AlertsView extends HTMLElement {
 
     #status = 'OPEN';
+    #page = 0;
 
     constructor() {
         super();
@@ -33,36 +35,39 @@ class AlertsView extends HTMLElement {
                     `).join('')}
                 </div>
                 <div class="card" id="list"><div class="empty">Ładowanie…</div></div>
+                <div class="pager" id="pager"></div>
             </div>
         `;
         shadow.querySelector('.tabs').addEventListener('click', (event) => {
             const button = event.target.closest('[data-status]');
             if (!button) return;
             this.#status = button.dataset.status;
-            this.#load();
+            this.#load(0); // switching filter restarts at the first page
         });
     }
 
     connectedCallback() {
-        this.#load();
+        this.#load(0);
     }
 
-    async #load() {
+    async #load(page) {
+        this.#page = page;
         this.shadowRoot.querySelectorAll('.tabs .btn').forEach((b) =>
             b.classList.toggle('active', b.dataset.status === this.#status));
         const container = this.shadowRoot.getElementById('list');
-        const alerts = await api.alerts.list(this.#status || null);
-        if (alerts.length === 0) {
+        const result = await api.alerts.list({ status: this.#status, page, size: PAGE_SIZE });
+        if (result.content.length === 0) {
             container.innerHTML = '<div class="empty">Brak alertów w tym widoku. 🎉</div>';
+            this.shadowRoot.getElementById('pager').innerHTML = '';
             return;
         }
         container.innerHTML = `
-            <table class="clickable-table">
+            <table class="clickable">
                 <thead>
                     <tr><th>Status</th><th>Powody</th><th>businessId</th><th>Utworzono</th><th>Transakcja</th><th></th></tr>
                 </thead>
                 <tbody>
-                    ${alerts.map((a) => `
+                    ${result.content.map((a) => `
                         <tr data-id="${esc(a.id)}">
                             <td><span class="badge badge-${a.status.toLowerCase()}">${esc(a.status)}</span></td>
                             <td>${a.reason.split(',').map((r) => `<span class="chip">${esc(r)}</span>`).join('')}</td>
@@ -77,6 +82,7 @@ class AlertsView extends HTMLElement {
         `;
         container.querySelectorAll('tbody tr').forEach((row) =>
             row.addEventListener('click', () => (window.location.hash = `#/alerts/${row.dataset.id}`)));
+        renderPager(this.shadowRoot.getElementById('pager'), result, (p) => this.#load(p));
     }
 }
 

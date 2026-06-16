@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,11 +69,12 @@ public class AlertService {
         return decisions.findAllByAlertIdOrderByCreatedAtDesc(alertId);
     }
 
-    /// Optional status filter keeps the analyst's queue views (OPEN first) cheap.
-    public List<Alert> findAll(AlertStatus status) {
+    /// Optional status filter keeps the analyst's queue views cheap; sort and page
+    /// size come from the controller via the Pageable.
+    public Page<Alert> findAll(AlertStatus status, Pageable pageable) {
         return status == null
-                ? repository.findAllByOrderByCreatedAtDesc()
-                : repository.findAllByStatusOrderByCreatedAtDesc(status);
+                ? repository.findAll(pageable)
+                : repository.findByStatus(status, pageable);
     }
 
     public Alert findById(UUID id) {

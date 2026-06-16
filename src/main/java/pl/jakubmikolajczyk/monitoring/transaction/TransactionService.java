@@ -1,11 +1,11 @@
 package pl.jakubmikolajczyk.monitoring.transaction;
 
 import java.time.InstantSource;
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,9 +58,8 @@ public class TransactionService {
         return transaction;
     }
 
-    public List<Transaction> search(TransactionSearchCriteria criteria) {
-        return repository.findAll(criteria.toSpecification(),
-                Sort.by(Sort.Direction.DESC, "transactionDate"));
+    public Page<Transaction> search(TransactionSearchCriteria criteria, Pageable pageable) {
+        return repository.findAll(criteria.toSpecification(), pageable);
     }
 
     public Transaction findById(UUID id) {

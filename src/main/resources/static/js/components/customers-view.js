@@ -1,5 +1,6 @@
 import { api, ApiError } from '../api.js';
 import { esc, fmtDateTime, shortId } from '../format.js';
+import { renderPager, PAGE_SIZE } from '../pagination.js';
 
 // Two cooperating components: <customer-form> emits a composed 'customer-registered'
 // CustomEvent, <customers-view> listens and refreshes the table - upward
@@ -27,6 +28,10 @@ class CustomerForm extends HTMLElement {
                     <label>Nazwisko
                         <input name="lastName" required maxlength="100" placeholder="Kowalski">
                         <span class="field-error" data-error-for="lastName"></span>
+                    </label>
+                    <label>E-mail <span class="optional">(opcjonalnie)</span>
+                        <input name="email" type="email" maxlength="254" placeholder="jan@example.com">
+                        <span class="field-error" data-error-for="email"></span>
                     </label>
                     <button class="btn btn-primary" type="submit">Dodaj klienta</button>
                 </div>
@@ -76,6 +81,8 @@ class CustomerForm extends HTMLElement {
 
 class CustomersView extends HTMLElement {
 
+    #page = 0;
+
     constructor() {
         super();
         const shadow = this.attachShadow({ mode: 'open' });
@@ -88,32 +95,37 @@ class CustomersView extends HTMLElement {
                 </div>
                 <customer-form></customer-form>
                 <div class="card" id="list"><div class="empty">Ładowanie…</div></div>
+                <div class="pager" id="pager"></div>
             </div>
         `;
-        shadow.addEventListener('customer-registered', () => this.#load());
+        // A new registration jumps back to the first page so the newest row is visible.
+        shadow.addEventListener('customer-registered', () => this.#load(0));
     }
 
     connectedCallback() {
-        this.#load();
+        this.#load(0);
     }
 
-    async #load() {
+    async #load(page) {
+        this.#page = page;
         const container = this.shadowRoot.getElementById('list');
-        const customers = await api.customers.list();
-        if (customers.length === 0) {
+        const result = await api.customers.list({ page, size: PAGE_SIZE });
+        if (result.content.length === 0) {
             container.innerHTML = '<div class="empty">Brak klientów — dodaj pierwszego powyżej.</div>';
+            this.shadowRoot.getElementById('pager').innerHTML = '';
             return;
         }
         container.innerHTML = `
             <table>
                 <thead>
-                    <tr><th>Klient</th><th>businessId</th><th>Utworzono</th><th>Id</th></tr>
+                    <tr><th>Klient</th><th>businessId</th><th>E-mail</th><th>Utworzono</th><th>Id</th></tr>
                 </thead>
                 <tbody>
-                    ${customers.map((c) => `
+                    ${result.content.map((c) => `
                         <tr>
                             <td><strong>${esc(c.firstName)} ${esc(c.lastName)}</strong></td>
                             <td class="mono">${esc(c.businessId)}</td>
+                            <td>${c.email ? esc(c.email) : '<span class="muted">—</span>'}</td>
                             <td class="muted">${fmtDateTime(c.createdAt)}</td>
                             <td class="mono muted" title="${esc(c.id)}">${shortId(c.id)}</td>
                         </tr>
@@ -121,6 +133,7 @@ class CustomersView extends HTMLElement {
                 </tbody>
             </table>
         `;
+        renderPager(this.shadowRoot.getElementById('pager'), result, (p) => this.#load(p));
     }
 }
 

@@ -1,5 +1,6 @@
 import { api, ApiError } from '../api.js';
 import { esc, fmtDateTime, fmtMoney, shortId } from '../format.js';
+import { renderPager, PAGE_SIZE } from '../pagination.js';
 
 // Transaction search (businessId required - mirrors the API contract, REQ-06) and
 // registration. Backend problem+json errors are rendered verbatim: the server is
@@ -8,6 +9,10 @@ import { esc, fmtDateTime, fmtMoney, shortId } from '../format.js';
 const CURRENCIES = ['PLN', 'EUR', 'USD', 'GBP', 'CHF'];
 
 class TransactionsView extends HTMLElement {
+
+    // The active search criteria are remembered so the pager can re-run the same
+    // query for a different page rather than re-reading the form.
+    #criteria = null;
 
     constructor() {
         super();
@@ -73,6 +78,7 @@ class TransactionsView extends HTMLElement {
                 <div class="card" id="results">
                     <div class="empty">Podaj businessId i kliknij „Szukaj”.</div>
                 </div>
+                <div class="pager" id="pager"></div>
             </div>
         `;
         shadow.getElementById('search-form').addEventListener('submit', this.#onSearch);
@@ -85,10 +91,9 @@ class TransactionsView extends HTMLElement {
         input.value = new Date(Date.now() - 60_000).toISOString().slice(0, 16);
     }
 
-    #onSearch = async (event) => {
+    #onSearch = (event) => {
         event.preventDefault();
         const banner = this.shadowRoot.getElementById('search-banner');
-        const results = this.shadowRoot.getElementById('results');
         banner.hidden = true;
         const raw = Object.fromEntries(new FormData(event.target));
         if (!raw.businessId.trim()) {
@@ -97,23 +102,32 @@ class TransactionsView extends HTMLElement {
             banner.hidden = false;
             return;
         }
-        const params = { businessId: raw.businessId.trim() };
-        if (raw.customerId.trim()) params.customerId = raw.customerId.trim();
-        if (raw.dateFrom) params.dateFrom = new Date(raw.dateFrom).toISOString();
-        if (raw.dateTo) params.dateTo = new Date(raw.dateTo).toISOString();
+        const criteria = { businessId: raw.businessId.trim() };
+        if (raw.customerId.trim()) criteria.customerId = raw.customerId.trim();
+        if (raw.dateFrom) criteria.dateFrom = new Date(raw.dateFrom).toISOString();
+        if (raw.dateTo) criteria.dateTo = new Date(raw.dateTo).toISOString();
+        this.#criteria = criteria;
+        this.#runSearch(0); // a fresh search always starts on the first page
+    };
+
+    async #runSearch(page) {
+        const banner = this.shadowRoot.getElementById('search-banner');
+        const results = this.shadowRoot.getElementById('results');
         try {
-            this.#renderResults(await api.transactions.search(params));
+            const pageData = await api.transactions.search({ ...this.#criteria, page, size: PAGE_SIZE });
+            this.#renderResults(pageData);
         } catch (error) {
             if (error instanceof ApiError) {
                 banner.textContent = error.message;
                 banner.className = 'banner banner-error';
                 banner.hidden = false;
                 results.innerHTML = '<div class="empty">Popraw kryteria wyszukiwania.</div>';
+                this.shadowRoot.getElementById('pager').innerHTML = '';
             } else {
                 throw error;
             }
         }
-    };
+    }
 
     #onRegister = async (event) => {
         event.preventDefault();
@@ -151,10 +165,12 @@ class TransactionsView extends HTMLElement {
         }
     };
 
-    #renderResults(transactions) {
+    #renderResults(pageData) {
         const container = this.shadowRoot.getElementById('results');
-        if (transactions.length === 0) {
+        const pager = this.shadowRoot.getElementById('pager');
+        if (pageData.content.length === 0) {
             container.innerHTML = '<div class="empty">Brak transakcji dla podanych kryteriów.</div>';
+            pager.innerHTML = '';
             return;
         }
         container.innerHTML = `
@@ -166,7 +182,7 @@ class TransactionsView extends HTMLElement {
                     </tr>
                 </thead>
                 <tbody>
-                    ${transactions.map((t) => `
+                    ${pageData.content.map((t) => `
                         <tr>
                             <td>${fmtDateTime(t.transactionDate)}</td>
                             <td class="right"><strong>${fmtMoney(t.amount, t.currency)}</strong></td>
@@ -178,6 +194,7 @@ class TransactionsView extends HTMLElement {
                 </tbody>
             </table>
         `;
+        renderPager(pager, pageData, (p) => this.#runSearch(p));
     }
 }
 

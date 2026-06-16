@@ -64,9 +64,9 @@ class AlertDecisionIntegrationTest {
     }
 
     private List<Map<String, Object>> alertsFor(String transactionId) throws Exception {
-        var result = mvc.get().uri("/api/alerts").exchange();
+        var result = mvc.get().uri("/api/alerts?size=100").exchange();
         String body = result.getMvcResult().getResponse().getContentAsString();
-        return JsonPath.read(body, "$[?(@.transactionId == '%s')]".formatted(transactionId));
+        return JsonPath.read(body, "$.content[?(@.transactionId == '%s')]".formatted(transactionId));
     }
 
     private MvcTestResult postDecision(Object alertId, String decision, String comment, long version) {

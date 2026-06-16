@@ -56,9 +56,11 @@ class DetectionIntegrationTest {
     }
 
     private List<Map<String, Object>> alertsFor(String transactionId) throws Exception {
-        var result = mvc.get().uri("/api/alerts").exchange();
+        // size=100 keeps every alert on one page despite data accumulating across the
+        // shared test context; the JsonPath filter then isolates this transaction's.
+        var result = mvc.get().uri("/api/alerts?size=100").exchange();
         String body = result.getMvcResult().getResponse().getContentAsString();
-        return JsonPath.read(body, "$[?(@.transactionId == '%s')]".formatted(transactionId));
+        return JsonPath.read(body, "$.content[?(@.transactionId == '%s')]".formatted(transactionId));
     }
 
     @Test
