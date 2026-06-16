@@ -32,7 +32,7 @@ class TransactionAnalysisListener {
                 event.eventId(), event.businessId(), event.transactionId(), Thread.currentThread());
         try {
             engine.analyse(event);
-        } catch (DataIntegrityViolationException duplicateAlert) {
+        } catch (DataIntegrityViolationException _) {
             // Two analyses raced for the same transaction; the database's unique
             // constraint is the source of truth and the first one won (ADR-0007).
             log.info("Alert for transaction {} already raised concurrently, skipping duplicate",

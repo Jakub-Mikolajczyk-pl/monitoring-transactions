@@ -39,7 +39,7 @@ public class AmlRuleEngine {
                 .<RuleResult.Violation>mapMulti((result, downstream) -> {
                     switch (result) {
                         case RuleResult.Violation violation -> downstream.accept(violation);
-                        case RuleResult.Clean ignored -> { /* nothing to report */ }
+                        case RuleResult.Clean _ -> { /* nothing to report */ }
                     }
                 })
                 .toList();
