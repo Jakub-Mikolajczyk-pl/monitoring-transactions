@@ -38,14 +38,27 @@ izolację stylów tam, gdzie ma to wartość (komponenty wielokrotnego użytku),
 
 - (+) `git clone` → `./mvnw spring-boot:run` → działający UI; zero instalacji node/npm.
 - (+) Każdy komponent to jeden samodzielny plik — łatwy do code review.
+- (+) Style są w plikach `.css` (`<link>` w Shadow DOM), nie w stringach JS — edycja
+  wyglądu bez dotykania kodu.
 - (−) Brak reaktywności frameworka — odświeżanie list jawne (po zdarzeniach); przy tej
   skali zaleta, nie wada.
-- (−) Brak testów jednostkowych UI (wymagałyby narzędzi node) — pokryte scenariuszem
-  manualnym w README i smoke testem; odnotowane jako uproszczenie.
+- (−) Testy komponentów są w przeglądarce (`/test/`), nie w `mvnw verify`/CI — patrz
+  „Testowanie UI" niżej.
+
+## Testowanie UI
+
+Komponenty mają **testy jednostkowe** w bezzależnościowym harnessie
+(`src/main/resources/static/test/`): montują custom element, stubują `fetch` i
+sprawdzają render oraz zdarzenia (np. `<customer-form>` emituje `customer-registered`
+i pokazuje błędy pól z `problem+json`; `<alerts-view>` renderuje wiersze z koperty
+strony). Uruchamiane przez otwarcie `/test/` w przeglądarce. Świadome ograniczenie:
+nie wpinają się w mavenowe CI (to wymagałoby toolchainu node). Ścieżka produkcyjna:
+te same specyfikacje pod Playwright/`@web/test-runner` jako osobny krok CI. Pliki
+testowe są serwowane ze statycznych zasobów (w produkcji wykluczone z budowania).
 
 ## Rozważane alternatywy
 
 - **Lit / Stencil** — wygodniejsze, ale wprowadzają toolchain node wbrew prostocie zadania.
 - **Framework SPA (React/Vue/Angular)** — sprzeczny z narzuconą technologią; odrzucone.
-- **Style inline w każdym komponencie** (odrzucony szkic planu) — duplikacja designu
-  w każdym Shadow DOM; zastąpione `adoptedStyleSheets`.
+- **Style w stringach JS / `adoptedStyleSheets`** (wcześniejsza wersja) — działało, ale
+  mieszało CSS z logiką; zastąpione plikami `.css` ładowanymi przez `<link>` w Shadow DOM.

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testy komponentów — Monitoring Transakcji</title>
+    <link rel="stylesheet" href="/styles/app.css">
+    <style>
+        body { max-width: 800px; margin: 0 auto; padding: 32px 20px; }
+        h1 { font-size: 1.4rem; }
+        .summary { font-size: 1.1rem; font-weight: 700; padding: 10px 14px; border-radius: 6px; }
+        .summary.ok { background: var(--color-approved-bg); color: var(--color-approved-text); }
+        .summary.fail { background: var(--color-open-bg); color: var(--color-open-text); }
+        .test-list { list-style: none; padding: 0; }
+        .test-list li { padding: 6px 0; border-bottom: 1px solid var(--color-border); }
+        .test-list li.ok { color: var(--color-success); }
+        .test-list li.fail { color: var(--color-danger); }
+        .test-list .error { color: var(--color-danger); font-family: var(--font-mono); font-size: 0.85rem; margin-top: 4px; }
+    </style>
+    <script type="module" src="./run.js"></script>
+</head>
+<body>
+    <h1>Testy jednostkowe komponentów</h1>
+    <p class="text-muted">Bezzależnościowy harness (Custom Elements + stubowany <code>fetch</code>). Uruchamiany w przeglądarce.</p>
+    <div id="results">Uruchamianie…</div>
+</body>
+</html>
