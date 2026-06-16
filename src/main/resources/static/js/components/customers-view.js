@@ -1,18 +1,18 @@
 import { api, ApiError } from '../api.js';
 import { esc, fmtDateTime, shortId } from '../format.js';
-import { sharedStyles } from '../shared-styles.js';
 
 // Two cooperating components: <customer-form> emits a composed 'customer-registered'
 // CustomEvent, <customers-view> listens and refreshes the table - upward
 // communication via events, downward via attributes/properties (ADR-0010).
+// Styles: /styles/components.css.
 
 class CustomerForm extends HTMLElement {
 
     constructor() {
         super();
         const shadow = this.attachShadow({ mode: 'open' });
-        shadow.adoptedStyleSheets = [sharedStyles];
         shadow.innerHTML = `
+            <link rel="stylesheet" href="/styles/components.css">
             <form class="card" novalidate>
                 <h3>Nowy klient</h3>
                 <div class="form-grid">
@@ -79,8 +79,8 @@ class CustomersView extends HTMLElement {
     constructor() {
         super();
         const shadow = this.attachShadow({ mode: 'open' });
-        shadow.adoptedStyleSheets = [sharedStyles];
         shadow.innerHTML = `
+            <link rel="stylesheet" href="/styles/components.css">
             <div class="view">
                 <div class="view-header">
                     <h2>Klienci</h2>

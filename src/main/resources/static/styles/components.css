@@ -1,0 +1,101 @@
+/* Shared component styles, kept out of JavaScript (ADR-0010). Each component's
+   Shadow DOM pulls this in with <link rel="stylesheet" href="/styles/components.css">.
+   Design tokens come from :root in app.css and inherit through the shadow boundary,
+   so var(--...) resolves here without re-declaring anything. */
+
+* { box-sizing: border-box; }
+
+h2 { margin: 0 0 4px; font-size: 1.35rem; }
+h3 { margin: 0 0 12px; font-size: 1.05rem; }
+p { margin: 0; }
+
+.view { display: grid; gap: 20px; }
+.view-header .lead { color: var(--color-text-muted); }
+
+.card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 20px;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--color-border); }
+th { color: var(--color-text-muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; }
+tbody tr:hover { background: rgb(20 70 123 / 0.04); }
+tbody tr:last-child td { border-bottom: none; }
+.clickable tbody tr { cursor: pointer; }
+
+.mono { font-family: var(--font-mono); font-size: 0.85rem; }
+.muted { color: var(--color-text-muted); }
+.right { text-align: right; }
+
+label { display: grid; gap: 4px; font-size: 0.9rem; font-weight: 600; }
+label .optional { font-weight: 400; color: var(--color-text-muted); }
+input, select, textarea {
+    font: inherit;
+    padding: 8px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    width: 100%;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 1px;
+}
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: end; }
+.field-error { color: var(--color-danger); font-size: 0.8rem; font-weight: 400; min-height: 1em; }
+
+.btn {
+    font: inherit;
+    font-weight: 600;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-radius: 6px;
+    padding: 8px 16px;
+    cursor: pointer;
+}
+.btn:hover { background: var(--color-bg); }
+.btn-primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.btn-primary:hover { background: var(--color-primary-hover); }
+.btn[disabled] { opacity: 0.6; cursor: not-allowed; }
+
+.badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+.badge-open { background: var(--color-open-bg); color: var(--color-open-text); }
+.badge-approved { background: var(--color-approved-bg); color: var(--color-approved-text); }
+.badge-rejected { background: var(--color-rejected-bg); color: var(--color-rejected-text); }
+
+.chip {
+    display: inline-block;
+    padding: 2px 8px;
+    margin-right: 6px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-bg);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+}
+
+.banner { padding: 10px 14px; border-radius: 6px; font-size: 0.92rem; }
+.banner-info { background: var(--color-banner-info-bg); color: var(--color-banner-info-text); }
+.banner-warn { background: var(--color-banner-warn-bg); color: var(--color-banner-warn-text); }
+.banner-error { background: var(--color-banner-error-bg); color: var(--color-banner-error-text); }
+.banner[hidden] { display: none; }
+
+.empty { padding: 24px; text-align: center; color: var(--color-text-muted); }
+
+/* Pagination control shared by every list view. */
+.pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 16px; }
+.pager-info { color: var(--color-text-muted); font-size: 0.9rem; }
+.pager:empty { display: none; }

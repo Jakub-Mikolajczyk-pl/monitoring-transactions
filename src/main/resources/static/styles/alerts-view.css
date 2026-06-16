@@ -1,0 +1,4 @@
+/* <alerts-view> status filter tabs. */
+
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs .btn.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }

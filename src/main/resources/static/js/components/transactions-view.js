@@ -1,10 +1,9 @@
 import { api, ApiError } from '../api.js';
 import { esc, fmtDateTime, fmtMoney, shortId } from '../format.js';
-import { sharedStyles } from '../shared-styles.js';
 
 // Transaction search (businessId required - mirrors the API contract, REQ-06) and
 // registration. Backend problem+json errors are rendered verbatim: the server is
-// the source of truth for messages.
+// the source of truth for messages. Styles: /styles/components.css.
 
 const CURRENCIES = ['PLN', 'EUR', 'USD', 'GBP', 'CHF'];
 
@@ -13,8 +12,8 @@ class TransactionsView extends HTMLElement {
     constructor() {
         super();
         const shadow = this.attachShadow({ mode: 'open' });
-        shadow.adoptedStyleSheets = [sharedStyles];
         shadow.innerHTML = `
+            <link rel="stylesheet" href="/styles/components.css">
             <div class="view">
                 <div class="view-header">
                     <h2>Transakcje</h2>

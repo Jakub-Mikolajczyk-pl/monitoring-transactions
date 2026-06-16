@@ -1,9 +1,9 @@
 import { api } from '../api.js';
 import { esc, fmtDateTime, shortId } from '../format.js';
-import { sharedStyles } from '../shared-styles.js';
 
 // Analyst's queue: alerts filtered by status, newest first. Row click navigates
 // to the details route - state lives in the URL hash, so views stay stateless.
+// Styles: /styles/components.css + /styles/alerts-view.css.
 
 const STATUS_TABS = [
     { value: '', label: 'Wszystkie' },
@@ -12,12 +12,6 @@ const STATUS_TABS = [
     { value: 'REJECTED', label: 'Odrzucone' },
 ];
 
-const localStyles = new CSSStyleSheet();
-localStyles.replaceSync(`
-    .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-    .tabs .btn.active { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
-`);
-
 class AlertsView extends HTMLElement {
 
     #status = 'OPEN';
@@ -25,8 +19,9 @@ class AlertsView extends HTMLElement {
     constructor() {
         super();
         const shadow = this.attachShadow({ mode: 'open' });
-        shadow.adoptedStyleSheets = [sharedStyles, localStyles];
         shadow.innerHTML = `
+            <link rel="stylesheet" href="/styles/components.css">
+            <link rel="stylesheet" href="/styles/alerts-view.css">
             <div class="view">
                 <div class="view-header">
                     <h2>Alerty AML</h2>

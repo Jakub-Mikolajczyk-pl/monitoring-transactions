@@ -1,34 +1,16 @@
 import { api, ApiError } from '../api.js';
 import { esc, fmtDateTime, fmtMoney, shortId } from '../format.js';
-import { sharedStyles } from '../shared-styles.js';
 
 // Alert details: the triggering transaction, the customer, the decision history
 // (newest first) and the decision form. The form carries the alert version it was
 // rendered with; a 409 from the backend means another analyst decided in the
 // meantime - the view explains it and reloads fresh data (ADR-0008).
+// Styles: /styles/components.css + /styles/alert-details.css.
 
-const localStyles = new CSSStyleSheet();
-localStyles.replaceSync(`
-    .columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-    dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 0; }
-    dt { color: var(--color-text-muted); }
-    dd { margin: 0; }
-    .amount { font-size: 1.5rem; font-weight: 700; }
-    .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
-    .timeline li { position: relative; padding: 0 0 16px 22px; border-left: 2px solid var(--color-border); margin-left: 6px; }
-    .timeline li:last-child { padding-bottom: 0; }
-    .timeline li::before {
-        content: ""; position: absolute; left: -7px; top: 4px;
-        width: 12px; height: 12px; border-radius: 50%;
-        background: var(--color-surface); border: 3px solid var(--color-primary);
-    }
-    .timeline .when { font-size: 0.82rem; color: var(--color-text-muted); }
-    .decision-options { display: flex; gap: 16px; }
-    .decision-options label { display: flex; align-items: center; gap: 6px; font-weight: 600; }
-    .decision-options input { width: auto; }
-    textarea { min-height: 70px; resize: vertical; }
-    .back { display: inline-block; margin-bottom: 4px; }
-`);
+const STYLE_LINKS = `
+    <link rel="stylesheet" href="/styles/components.css">
+    <link rel="stylesheet" href="/styles/alert-details.css">
+`;
 
 class AlertDetails extends HTMLElement {
 
@@ -36,8 +18,7 @@ class AlertDetails extends HTMLElement {
 
     constructor() {
         super();
-        const shadow = this.attachShadow({ mode: 'open' });
-        shadow.adoptedStyleSheets = [sharedStyles, localStyles];
+        this.attachShadow({ mode: 'open' });
     }
 
     connectedCallback() {
@@ -49,13 +30,14 @@ class AlertDetails extends HTMLElement {
             this.#details = await api.alerts.details(this.getAttribute('alert-id'));
             this.#render();
         } catch (error) {
-            this.shadowRoot.innerHTML = `<div class="card"><div class="empty">${esc(error.message)}</div></div>`;
+            this.shadowRoot.innerHTML = `${STYLE_LINKS}<div class="card"><div class="empty">${esc(error.message)}</div></div>`;
         }
     }
 
     #render() {
         const alert = this.#details;
         this.shadowRoot.innerHTML = `
+            ${STYLE_LINKS}
             <div class="view">
                 <div class="view-header">
                     <a class="back" href="#/alerts">← Wróć do listy alertów</a>

@@ -1,52 +1,11 @@
-import { sharedStyles } from '../shared-styles.js';
-
 // Application shell: top navigation + hash router. Views are plain custom
 // elements swapped into the outlet; the alert-details route carries the id as an
-// attribute (ADR-0010).
-
-const shellStyles = new CSSStyleSheet();
-shellStyles.replaceSync(`
-    :host { display: block; min-height: 100vh; }
-    header {
-        background: var(--color-surface);
-        border-bottom: 1px solid var(--color-border);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 24px;
-        padding: 12px 28px;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-mark {
-        width: 38px; height: 38px;
-        display: grid; place-items: center;
-        background: var(--color-primary);
-        color: #fff;
-        font-weight: 800;
-        border-radius: 8px;
-        letter-spacing: 0.02em;
-    }
-    .brand strong { display: block; line-height: 1.2; }
-    .brand .muted { font-size: 0.8rem; }
-    nav { display: flex; align-items: center; gap: 4px; }
-    nav a {
-        text-decoration: none;
-        color: var(--color-text);
-        font-weight: 600;
-        padding: 8px 14px;
-        border-radius: 6px;
-    }
-    nav a:hover { background: var(--color-bg); }
-    nav a.active { background: var(--color-primary); color: #fff; }
-    nav a.api-link { color: var(--color-text-muted); font-weight: 400; }
-    main { max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
-`);
+// attribute (ADR-0010). Styles live in /styles/app-shell.css and /styles/components.css.
 
 const template = document.createElement('template');
 template.innerHTML = `
+    <link rel="stylesheet" href="/styles/components.css">
+    <link rel="stylesheet" href="/styles/app-shell.css">
     <header>
         <div class="brand">
             <span class="brand-mark">MT</span>
@@ -77,7 +36,6 @@ class AppShell extends HTMLElement {
     constructor() {
         super();
         const shadow = this.attachShadow({ mode: 'open' });
-        shadow.adoptedStyleSheets = [sharedStyles, shellStyles];
         shadow.append(template.content.cloneNode(true));
         this.#outlet = shadow.getElementById('outlet');
     }
