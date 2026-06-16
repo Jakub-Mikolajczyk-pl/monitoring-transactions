@@ -201,21 +201,29 @@ Tak — świadomie i pod kontrolą, analogicznie do pracy z parą programistyczn
 | H2 in-memory (zero-setup dla oceniającego) | PostgreSQL + Testcontainers w testach; te same migracje Flyway |
 | Zdarzenia w pamięci aplikacji (PDF dopuszcza wprost) | Transactional Outbox + broker (Kafka/Rabbit) — granica modułu `detection` już na to gotowa |
 | Próg kwotowy ślepy na walutę (PDF: „np. 2000 zł") | progi per waluta lub normalizacja FX |
-| Brak paginacji list | `Pageable` + nagłówki strony |
 | Brak uwierzytelniania (poza zakresem PDF) | Spring Security + OIDC; `decidedBy` przy decyzjach |
 | `reason` jako CSV w jednej kolumnie (model z PDF) | tabela `alert_reasons` 1:N |
-| Brak testów jednostkowych UI | Playwright dla ścieżek krytycznych |
+| Paginacja offsetowa, stały sort | keyset/cursor + parametr `sort` (proste rozszerzenie `Pages`) |
+| Brak danych kontaktowych klienta (e-mail poza modelem z PDF) | opcjonalne pole z `@Email`; pewny dowód istnienia adresu daje dopiero wiadomość potwierdzająca |
+| Testy komponentów w przeglądarce (`/test/`), nie w CI mavenowym | te same specyfikacje pod Playwright jako krok CI ([ADR-0010](docs/adr/0010-frontend-web-components.md#testowanie-ui)) |
+
+> Dane startowe: aplikacja wstaje z gotowym zestawem demo (Flyway `db/seed`, profil
+> runtime) — 5 klientów, 16 transakcji, 3 alerty. Testy używają profilu `test`, który
+> ten seed wyłącza. Decyzje przeglądowe (paginacja z limitem, catch-all 500, rozdział
+> stylów, testy komponentów, granice transakcji) są udokumentowane w odpowiednich
+> [ADR-ach](docs/adr/README.md) oraz [wymaganiach](docs/requirements.md).
 
 ## 8. Nawigacja po repozytorium
 
 ```
 docs/requirements.md        analiza wymagań + macierz traceability (REQ-xx → kod → test)
-docs/adr/                   11 decyzji architektonicznych z odrzuconymi alternatywami
+docs/adr/                   12 decyzji architektonicznych z odrzuconymi alternatywami
 docs/implementation-plan.md plan dostarczania pionowymi przyrostami (S0–S8)
 docs/git-convention.md      konwencja commitów (Conventional Commits + Refs: REQ-xx)
 docs/java-features.md       mapa nowości Javy 14–25 użytych w projekcie
-src/main/resources/db/      migracje Flyway V1–V4
-src/main/resources/static/  frontend (Web Components, ES modules)
+src/main/resources/db/migration  migracje schematu Flyway V1–V4
+src/main/resources/db/seed       dane demo (V900, tylko runtime)
+src/main/resources/static/  frontend (Web Components, ES modules) + testy /test/ i E2E /e2e/
 ```
 
 Historia commitów jest częścią rozwiązania: `git log --oneline` czyta się jak plan

@@ -6,7 +6,7 @@ describe('api error handling', () => {
         const restore = stubFetch(() => jsonResponse(400, {
             title: 'Bad request',
             detail: 'invalid',
-            errors: [{ field: 'email', message: 'must be an e-mail' }],
+            errors: [{ field: 'firstName', message: 'must not be blank' }],
         }));
         try {
             await api.customers.create({});
@@ -14,7 +14,7 @@ describe('api error handling', () => {
         } catch (error) {
             assert(error instanceof ApiError, 'error is an ApiError');
             assertEquals(error.status, 400);
-            assertEquals(error.fieldErrors[0].field, 'email');
+            assertEquals(error.fieldErrors[0].field, 'firstName');
         } finally {
             restore();
         }

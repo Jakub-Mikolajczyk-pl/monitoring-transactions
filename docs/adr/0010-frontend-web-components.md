@@ -13,9 +13,10 @@ formularz decyzji.
 
 1. Czyste standardy platformy: **Custom Elements + Shadow DOM + `<template>`**,
    ES modules ładowane natywnie przez przeglądarkę — **zero kroku budowania**.
-2. Współdzielenie stylów między komponentami przez **Constructable Stylesheets**
-   (`adoptedStyleSheets`) — wspólny arkusz tokenów (kolory, typografia) bez duplikacji
-   i bez wycieków CSS.
+2. Style w **osobnych plikach `.css`** (`static/styles/`), ładowane do każdego Shadow DOM
+   przez `<link rel="stylesheet">` — wspólny `components.css` plus opcjonalny plik per
+   komponent. CSS jest poza JavaScriptem (edytowalny bez dotykania logiki); tokeny
+   z `:root` (`app.css`) przenikają granicę Shadow DOM, więc nic nie deklarujemy ponownie.
 3. Routing hashowy (`#/customers`, `#/transactions`, `#/alerts`, `#/alerts/{id}`)
    w komponencie powłoki; komunikacja w górę przez `CustomEvent`, w dół przez
    atrybuty/właściwości.
@@ -31,8 +32,9 @@ formularz decyzji.
 
 Brak bundlera i frameworka usuwa całą klasę problemów (wersje, build, konfiguracja)
 i pokazuje znajomość **platformy**, o którą wprost pyta zadanie. Shadow DOM daje
-izolację stylów tam, gdzie ma to wartość (komponenty wielokrotnego użytku), a
-`adoptedStyleSheets` rozwiązuje jego klasyczną wadę — duplikację wspólnych stylów.
+izolację stylów tam, gdzie ma to wartość (komponenty wielokrotnego użytku); wspólny
+`components.css` ładowany przez `<link>` w każdym cieniu eliminuje jego klasyczną wadę
+(duplikację stylów), a CSS pozostaje w plikach, nie w stringach JS.
 
 ## Konsekwencje
 
@@ -55,6 +57,11 @@ strony). Uruchamiane przez otwarcie `/test/` w przeglądarce. Świadome ogranicz
 nie wpinają się w mavenowe CI (to wymagałoby toolchainu node). Ścieżka produkcyjna:
 te same specyfikacje pod Playwright/`@web/test-runner` jako osobny krok CI. Pliki
 testowe są serwowane ze statycznych zasobów (w produkcji wykluczone z budowania).
+
+Uzupełnieniem jest **lekki E2E na żywym backendzie** pod `/e2e/` (auto-przebieg pełnego
+przepływu AML: rejestracje, obie reguły i alert scalony, walidacje 400/422, paginacja
+z limitem, szczegóły alertu, decyzja, konflikt 409, brak zasobu 404). Tu `fetch` nie jest
+stubowany — to realny ruch HTTP przez reguły, analizę asynchroniczną i bazę.
 
 ## Rozważane alternatywy
 

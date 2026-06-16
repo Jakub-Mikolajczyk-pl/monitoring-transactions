@@ -25,8 +25,9 @@ Cytat wprost z zadania, traktowany jako naczelna zasada projektu:
 logika generowania alertów, README z opisem decyzji.
 
 **Poza zakresem (świadomie):** uwierzytelnianie/autoryzacja, zewnętrzny broker komunikatów,
-przeliczenia walutowe (FX), paginacja list, wielojęzyczność UI. Każde z tych uproszczeń jest
-odnotowane w README wraz ze ścieżką ewolucji.
+przeliczenia walutowe (FX), wielojęzyczność UI oraz dane kontaktowe klienta (np. e-mail —
+poza modelem domenowym z PDF). Każde z tych uproszczeń jest odnotowane w README wraz ze
+ścieżką ewolucji.
 
 ## 3. Słownik domeny
 
@@ -63,10 +64,11 @@ odnotowane w README wraz ze ścieżką ewolucji.
 |---|---|---|
 | NFR-01 | Proste uruchomienie przez oceniającego — bez zewnętrznych zależności | H2 in-memory, `./mvnw spring-boot:run`, frontend serwowany przez Spring |
 | NFR-02 | Audytowalność: transakcje niemutowalne, decyzje append-only, schemat bazy wersjonowany | `updatable=false`, brak `PUT`/`DELETE`, Flyway |
-| NFR-03 | Spójny, samoopisujący kontrakt błędów | RFC 9457 `application/problem+json` |
+| NFR-03 | Spójny, samoopisujący kontrakt błędów; brak wycieku detali przy 500 | RFC 9457 `application/problem+json`; catch-all 500 z `correlationId`, pełny stack tylko w logu ([ADR-0009](adr/0009-rest-contract-problemdetail.md)) |
 | NFR-04 | Bezpieczeństwo współbieżności przy decyzjach analityków | optimistic locking (`@Version`) → HTTP 409 |
 | NFR-05 | Czytelna, atomowa historia commitów (PDF §7: „duży plus") | Conventional Commits + `Refs: REQ-xx`, patrz [git-convention.md](git-convention.md) |
 | NFR-06 | Obserwowalność minimum | Spring Boot Actuator (health/info/metrics), logi przebiegu analizy |
+| NFR-07 | Listy ograniczone — ochrona pamięci przy dużych zbiorach | paginacja kopertą `PageResponse`, twardy limit `size` (`Pages`, max 100) ([ADR-0009](adr/0009-rest-contract-problemdetail.md)) |
 
 ## 6. Niejednoznaczności i przyjęte interpretacje
 

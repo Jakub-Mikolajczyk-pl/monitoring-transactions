@@ -13,6 +13,7 @@ niemutowalne — zmiana decyzji to nowy ADR z adnotacją „zastępuje".
 | [0006](0006-async-in-app-events.md) | Zdarzenia in-app `AFTER_COMMIT` + wirtualne wątki | architektura |
 | [0007](0007-single-alert-merged-reasons.md) | Jeden alert/transakcję; sealed `RuleResult`; idempotencja w bazie | domena / detekcja |
 | [0008](0008-optimistic-locking-decisions.md) | Decyzje append-only + optimistic locking → 409 | domena / współbieżność |
-| [0009](0009-rest-contract-problemdetail.md) | RFC 9457 `ProblemDetail`; 201 dla transakcji; bez paginacji | API |
-| [0010](0010-frontend-web-components.md) | Czyste Web Components, `adoptedStyleSheets`, bez bundlera | frontend |
+| [0009](0009-rest-contract-problemdetail.md) | RFC 9457 `ProblemDetail` (+ catch-all 500); 201 dla transakcji; paginacja z limitem | API |
+| [0010](0010-frontend-web-components.md) | Czyste Web Components, CSS w plikach (`<link>`), bez bundlera | frontend |
 | [0011](0011-uuidv7-identifiers.md) | UUIDv7 generowane w aplikacji | persystencja |
+| [0012](0012-transaction-boundaries.md) | Jawne granice transakcji (serwis, `readOnly`, 2 krótkie transakcje w detekcji) | transakcyjność |

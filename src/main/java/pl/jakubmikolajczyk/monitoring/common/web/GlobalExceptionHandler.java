@@ -51,7 +51,7 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     /// Syntactically valid request breaking a domain consistency rule -> 422.
     @ExceptionHandler(BusinessRuleViolationException.class)
     ProblemDetail handleBusinessRuleViolation(BusinessRuleViolationException ex) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_CONTENT, ex.getMessage());
         problem.setTitle("Business rule violated");
         return problem;
     }

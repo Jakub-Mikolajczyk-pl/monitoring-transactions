@@ -2,11 +2,10 @@ import { describe, it, assert, assertEquals, stubFetch, jsonResponse, mount, tic
 import '../js/components/customers-view.js';
 import '../js/components/alerts-view.js';
 
-function fillCustomerForm(shadow, { businessId = 'BANK', firstName = 'Jan', lastName = 'Kowalski', email = '' }) {
+function fillCustomerForm(shadow, { businessId = 'BANK', firstName = 'Jan', lastName = 'Kowalski' } = {}) {
     shadow.querySelector('[name="businessId"]').value = businessId;
     shadow.querySelector('[name="firstName"]').value = firstName;
     shadow.querySelector('[name="lastName"]').value = lastName;
-    shadow.querySelector('[name="email"]').value = email;
 }
 
 describe('<customer-form>', () => {
@@ -29,17 +28,17 @@ describe('<customer-form>', () => {
     it('renders the backend field error next to the offending input', async () => {
         const restore = stubFetch(() => jsonResponse(400, {
             title: 'Bad request',
-            errors: [{ field: 'email', message: 'zły adres e-mail' }],
+            errors: [{ field: 'lastName', message: 'nazwisko jest wymagane' }],
         }));
         const element = mount('customer-form');
 
-        fillCustomerForm(element.shadowRoot, { email: 'broken' });
+        fillCustomerForm(element.shadowRoot, { lastName: '' });
         element.shadowRoot.querySelector('form').requestSubmit();
         await tick(50);
         restore();
 
-        const errorText = element.shadowRoot.querySelector('[data-error-for="email"]').textContent;
-        assertEquals(errorText, 'zły adres e-mail');
+        const errorText = element.shadowRoot.querySelector('[data-error-for="lastName"]').textContent;
+        assertEquals(errorText, 'nazwisko jest wymagane');
         element.remove();
     });
 });

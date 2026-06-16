@@ -29,10 +29,6 @@ class CustomerForm extends HTMLElement {
                         <input name="lastName" required maxlength="100" placeholder="Kowalski">
                         <span class="field-error" data-error-for="lastName"></span>
                     </label>
-                    <label>E-mail <span class="optional">(opcjonalnie)</span>
-                        <input name="email" type="email" maxlength="254" placeholder="jan@example.com">
-                        <span class="field-error" data-error-for="email"></span>
-                    </label>
                     <button class="btn btn-primary" type="submit">Dodaj klienta</button>
                 </div>
                 <p class="banner" hidden></p>
@@ -118,14 +114,13 @@ class CustomersView extends HTMLElement {
         container.innerHTML = `
             <table>
                 <thead>
-                    <tr><th>Klient</th><th>businessId</th><th>E-mail</th><th>Utworzono</th><th>Id</th></tr>
+                    <tr><th>Klient</th><th>businessId</th><th>Utworzono</th><th>Id</th></tr>
                 </thead>
                 <tbody>
                     ${result.content.map((c) => `
                         <tr>
                             <td><strong>${esc(c.firstName)} ${esc(c.lastName)}</strong></td>
                             <td class="mono">${esc(c.businessId)}</td>
-                            <td>${c.email ? esc(c.email) : '<span class="muted">—</span>'}</td>
                             <td class="muted">${fmtDateTime(c.createdAt)}</td>
                             <td class="mono muted" title="${esc(c.id)}">${shortId(c.id)}</td>
                         </tr>

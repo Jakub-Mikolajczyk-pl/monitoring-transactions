@@ -23,7 +23,7 @@ z przykładów zadania:
 
 - klient otrzymuje `businessId` przy rejestracji (bez unikalności — wiele rekordów dzieli wartość),
 - transakcja przyjmuje `businessId` w żądaniu i system **waliduje zgodność** z `businessId`
-  klienta — niezgodność to błąd spójności danych → **HTTP 422**,
+  klienta — niezgodność to błąd spójności danych → **HTTP 422 (Unprocessable Content)**,
 - alert **dziedziczy** `businessId` z transakcji (denormalizacja pod wyszukiwanie i audyt).
 
 ## Uzasadnienie

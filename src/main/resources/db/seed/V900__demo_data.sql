@@ -12,13 +12,13 @@
 
 -- Customers ------------------------------------------------------------------
 -- DEMO-BANK is one business context; DEMO-FX is a second one, to show that
--- businessId partitions data (ADR-0003). Piotr has no e-mail (the field is optional).
-INSERT INTO customers (id, business_id, first_name, last_name, email, created_at) VALUES
- ('01900000-0000-7000-8000-0000000000c1', 'DEMO-BANK', 'Jan',   'Demczak',   'jan.demczak@demo-bank.example',   TIMESTAMP WITH TIME ZONE '2026-06-10 08:00:00+00'),
- ('01900000-0000-7000-8000-0000000000c2', 'DEMO-BANK', 'Anna',  'Wzorcowa',  'anna.wzorcowa@demo-bank.example', TIMESTAMP WITH TIME ZONE '2026-06-10 08:01:00+00'),
- ('01900000-0000-7000-8000-0000000000c3', 'DEMO-BANK', 'Piotr', 'Czysty',    NULL,                              TIMESTAMP WITH TIME ZONE '2026-06-10 08:02:00+00'),
- ('01900000-0000-7000-8000-0000000000c4', 'DEMO-BANK', 'Zofia', 'Mieszana',  'zofia.mieszana@demo-bank.example', TIMESTAMP WITH TIME ZONE '2026-06-10 08:03:00+00'),
- ('01900000-0000-7000-8000-0000000000c5', 'DEMO-FX',   'Marek', 'Walutowy',  'marek.walutowy@demo-fx.example',  TIMESTAMP WITH TIME ZONE '2026-06-10 08:04:00+00');
+-- businessId partitions data (ADR-0003).
+INSERT INTO customers (id, business_id, first_name, last_name, created_at) VALUES
+ ('01900000-0000-7000-8000-0000000000c1', 'DEMO-BANK', 'Jan',   'Demczak',  TIMESTAMP WITH TIME ZONE '2026-06-10 08:00:00+00'),
+ ('01900000-0000-7000-8000-0000000000c2', 'DEMO-BANK', 'Anna',  'Wzorcowa', TIMESTAMP WITH TIME ZONE '2026-06-10 08:01:00+00'),
+ ('01900000-0000-7000-8000-0000000000c3', 'DEMO-BANK', 'Piotr', 'Czysty',   TIMESTAMP WITH TIME ZONE '2026-06-10 08:02:00+00'),
+ ('01900000-0000-7000-8000-0000000000c4', 'DEMO-BANK', 'Zofia', 'Mieszana', TIMESTAMP WITH TIME ZONE '2026-06-10 08:03:00+00'),
+ ('01900000-0000-7000-8000-0000000000c5', 'DEMO-FX',   'Marek', 'Walutowy', TIMESTAMP WITH TIME ZONE '2026-06-10 08:04:00+00');
 
 -- Transactions ---------------------------------------------------------------
 -- Jan: one ordinary payment (no alert) and one above the 2000 threshold.

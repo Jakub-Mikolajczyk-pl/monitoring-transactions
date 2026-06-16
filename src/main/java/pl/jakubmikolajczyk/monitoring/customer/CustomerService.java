@@ -30,18 +30,8 @@ public class CustomerService {
                 request.businessId().strip(),
                 request.firstName().strip(),
                 request.lastName().strip(),
-                normalizeEmail(request.email()),
                 clock);
         return repository.save(customer);
-    }
-
-    /// Blank and missing e-mail collapse to null: a half-empty string in the
-    /// database is a future bug waiting to happen.
-    private static String normalizeEmail(String email) {
-        if (email == null || email.isBlank()) {
-            return null;
-        }
-        return email.strip();
     }
 
     public Page<Customer> findAll(Pageable pageable) {
