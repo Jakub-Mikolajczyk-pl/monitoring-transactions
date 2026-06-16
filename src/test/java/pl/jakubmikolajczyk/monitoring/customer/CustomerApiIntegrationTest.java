@@ -73,4 +73,45 @@ class CustomerApiIntegrationTest {
         assertThat(result).hasStatus(HttpStatus.NOT_FOUND);
         assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Resource not found");
     }
+
+    @Test
+    void storesValidEmailWhenProvided() {
+        var result = mvc.post().uri("/api/customers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"businessId": "BANK_A", "firstName": "Ewa", "lastName": "Mejlowa",
+                         "email": "ewa.mejlowa@example.com"}
+                        """)
+                .exchange();
+
+        assertThat(result).hasStatus(HttpStatus.CREATED);
+        assertThat(result).bodyJson().extractingPath("$.email").isEqualTo("ewa.mejlowa@example.com");
+    }
+
+    @Test
+    void acceptsCustomerWithoutEmail() {
+        var result = mvc.post().uri("/api/customers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"businessId": "BANK_A", "firstName": "Bez", "lastName": "Maila"}
+                        """)
+                .exchange();
+
+        assertThat(result).hasStatus(HttpStatus.CREATED);
+        assertThat(result).bodyJson().extractingPath("$.email").isNull();
+    }
+
+    @Test
+    void rejectsMalformedEmailWithFieldLevelProblemDetail() {
+        var result = mvc.post().uri("/api/customers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {"businessId": "BANK_A", "firstName": "Zła", "lastName": "Składnia",
+                         "email": "not-an-email"}
+                        """)
+                .exchange();
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo("email");
+    }
 }

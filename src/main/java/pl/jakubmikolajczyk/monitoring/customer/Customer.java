@@ -33,6 +33,11 @@ public class Customer {
     @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
 
+    /// Optional contact e-mail (see migration V5). Nullable by design - it is an
+    /// additive extension, not part of the core domain.
+    @Column(name = "email", length = 254)
+    private String email;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -40,16 +45,19 @@ public class Customer {
         // JPA only
     }
 
-    private Customer(UUID id, String businessId, String firstName, String lastName, Instant createdAt) {
+    private Customer(UUID id, String businessId, String firstName, String lastName,
+            String email, Instant createdAt) {
         this.id = id;
         this.businessId = businessId;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.email = email;
         this.createdAt = createdAt;
     }
 
-    public static Customer register(String businessId, String firstName, String lastName, InstantSource clock) {
-        return new Customer(Uuids.v7(), businessId, firstName, lastName, clock.instant());
+    public static Customer register(String businessId, String firstName, String lastName,
+            String email, InstantSource clock) {
+        return new Customer(Uuids.v7(), businessId, firstName, lastName, email, clock.instant());
     }
 
     public UUID getId() {
@@ -66,6 +74,10 @@ public class Customer {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public Instant getCreatedAt() {
