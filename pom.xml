@@ -120,6 +120,11 @@
 					     JDKs will block) dynamic agent self-attach. Version comes from the
 					     Boot BOM; -Xshare:off silences the harmless CDS sharing warning. -->
 					<argLine>-javaagent:${settings.localRepository}/org/mockito/mockito-core/${mockito.version}/mockito-core-${mockito.version}.jar -Xshare:off</argLine>
+					<!-- Activate the test profile for every test run so the demo seed
+					     (db/seed) is excluded from the test database. -->
+					<systemPropertyVariables>
+						<spring.profiles.active>test</spring.profiles.active>
+					</systemPropertyVariables>
 				</configuration>
 			</plugin>
 		</plugins>
