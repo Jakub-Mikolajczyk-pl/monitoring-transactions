@@ -1,7 +1,5 @@
 # Monitoring Transakcji — moduł AML
 
-[![CI](https://github.com/Jakub-Mikolajczyk-pl/monitoring-transactions/actions/workflows/ci.yml/badge.svg)](https://github.com/Jakub-Mikolajczyk-pl/monitoring-transactions/actions/workflows/ci.yml)
-
 System do monitorowania transakcji finansowych (zadanie rekrutacyjne): rejestracja
 klientów i transakcji, **asynchroniczna** analiza reguł AML na **wirtualnych wątkach**,
 generowanie alertów oraz obsługa decyzji analityka z pełną historią audytową
