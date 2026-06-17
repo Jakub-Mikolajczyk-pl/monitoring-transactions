@@ -1,5 +1,5 @@
 import { api, ApiError } from '../api.js';
-import { esc, fmtDateTime, fmtMoney, shortId } from '../format.js';
+import { esc, fmtDateTime, fmtMoney } from '../format.js';
 
 // Alert details: the triggering transaction, the customer, the decision history
 // (newest first) and the decision form. The form carries the alert version it was
@@ -60,7 +60,7 @@ class AlertDetails extends HTMLElement {
                         <dl>
                             <dt>Data transakcji</dt><dd>${fmtDateTime(alert.transaction.transactionDate)}</dd>
                             <dt>businessId</dt><dd class="mono">${esc(alert.businessId)}</dd>
-                            <dt>Id transakcji</dt><dd class="mono" title="${esc(alert.transactionId)}">${shortId(alert.transactionId)}</dd>
+                            <dt>Id transakcji</dt><dd class="mono">${esc(alert.transactionId)}</dd>
                             <dt>Zarejestrowano</dt><dd>${fmtDateTime(alert.transaction.createdAt)}</dd>
                         </dl>
                     </section>
@@ -70,7 +70,7 @@ class AlertDetails extends HTMLElement {
                         <p><strong>${esc(alert.customer.firstName)} ${esc(alert.customer.lastName)}</strong></p>
                         <dl>
                             <dt>businessId</dt><dd class="mono">${esc(alert.customer.businessId)}</dd>
-                            <dt>Id klienta</dt><dd class="mono" title="${esc(alert.customer.id)}">${shortId(alert.customer.id)}</dd>
+                            <dt>Id klienta</dt><dd class="mono">${esc(alert.customer.id)}</dd>
                             <dt>W systemie od</dt><dd>${fmtDateTime(alert.customer.createdAt)}</dd>
                         </dl>
                     </section>

@@ -70,7 +70,7 @@ class TransactionApiIntegrationTest {
                         """)
                 .exchange();
 
-        assertThat(result).hasStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(result).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
         assertThat(result).bodyJson().extractingPath("$.title").isEqualTo("Business rule violated");
     }
 
@@ -91,7 +91,7 @@ class TransactionApiIntegrationTest {
                         """.formatted(customerId))
                 .exchange();
 
-        assertThat(result).hasStatus(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(result).hasStatus(HttpStatus.UNPROCESSABLE_CONTENT);
         assertThat(result).bodyJson().extractingPath("$.detail")
                 .asString().contains("does not match customer businessId");
     }

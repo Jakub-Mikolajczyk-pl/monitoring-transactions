@@ -62,8 +62,8 @@ class HighFrequencyRuleTest {
         rule.evaluate(transaction());
 
         verify(repository).countInWindow(
-                eq(customerId),
-                eq(TRANSACTION_TIME.minus(Duration.ofHours(1))),
-                eq(TRANSACTION_TIME));
+                customerId,
+                TRANSACTION_TIME.minus(Duration.ofHours(1)),
+                TRANSACTION_TIME);
     }
 }

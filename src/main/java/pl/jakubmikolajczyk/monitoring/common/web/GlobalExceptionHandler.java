@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -30,8 +31,9 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     /// Enriches the standard 400 response with per-field validation errors so API
     /// clients (including our own UI) can point at the offending fields.
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    @SuppressWarnings("java:S2638")
+    protected @Nullable ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         ProblemDetail problem = ex.getBody();
         problem.setProperty("errors", ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> Map.of(

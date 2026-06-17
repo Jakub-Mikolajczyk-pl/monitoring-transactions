@@ -38,13 +38,14 @@ izolację stylów tam, gdzie ma to wartość (komponenty wielokrotnego użytku);
 
 ## Konsekwencje
 
-- (+) `git clone` → `./mvnw spring-boot:run` → działający UI; zero instalacji node/npm.
+- (+) `git clone` → `./mvnw spring-boot:run` → działający UI; zero instalacji node/npm
+  dla samej aplikacji.
 - (+) Każdy komponent to jeden samodzielny plik — łatwy do code review.
 - (+) Style są w plikach `.css` (`<link>` w Shadow DOM), nie w stringach JS — edycja
   wyglądu bez dotykania kodu.
 - (−) Brak reaktywności frameworka — odświeżanie list jawne (po zdarzeniach); przy tej
   skali zaleta, nie wada.
-- (−) Testy komponentów są w przeglądarce (`/test/`), nie w `mvnw verify`/CI — patrz
+- (−) Testy komponentów są w przeglądarce (`/test/index.html`), nie w `mvnw verify`/CI — patrz
   „Testowanie UI" niżej.
 
 ## Testowanie UI
@@ -53,15 +54,15 @@ Komponenty mają **testy jednostkowe** w bezzależnościowym harnessie
 (`src/main/resources/static/test/`): montują custom element, stubują `fetch` i
 sprawdzają render oraz zdarzenia (np. `<customer-form>` emituje `customer-registered`
 i pokazuje błędy pól z `problem+json`; `<alerts-view>` renderuje wiersze z koperty
-strony). Uruchamiane przez otwarcie `/test/` w przeglądarce. Świadome ograniczenie:
+strony). Uruchamiane przez otwarcie `/test/index.html` w przeglądarce. Świadome ograniczenie:
 nie wpinają się w mavenowe CI (to wymagałoby toolchainu node). Ścieżka produkcyjna:
 te same specyfikacje pod Playwright/`@web/test-runner` jako osobny krok CI. Pliki
 testowe są serwowane ze statycznych zasobów (w produkcji wykluczone z budowania).
 
-Uzupełnieniem jest **lekki E2E na żywym backendzie** pod `/e2e/` (auto-przebieg pełnego
-przepływu AML: rejestracje, obie reguły i alert scalony, walidacje 400/422, paginacja
-z limitem, szczegóły alertu, decyzja, konflikt 409, brak zasobu 404). Tu `fetch` nie jest
-stubowany — to realny ruch HTTP przez reguły, analizę asynchroniczną i bazę.
+Uzupełnieniem review jest **wizualne demo Playwright** w `tests/demo/`. Nie jest częścią
+CI: uruchamia headed Chromium, spowalnia interakcje i pokazuje nakładki opisujące kolejne
+kroki pracy analityka. Demo używa żywego backendu i realnego HTTP, ale jego celem jest
+pokazanie przepływu użytkownikowi, a nie zastąpienie testów integracyjnych.
 
 ## Rozważane alternatywy
 

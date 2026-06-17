@@ -1,6 +1,6 @@
 // A tiny zero-dependency test harness for the Web Components. It runs in any
 // browser - no Node, npm or bundler - which keeps the frontend toolchain-free
-// (ADR-0010). Open /test/ to run it, or drive it headlessly and read
+// (ADR-0010). Open /test/index.html to run it, or drive it headlessly and read
 // window.__TEST_RESULTS__. In a production pipeline these same specs would run
 // under Playwright/@web-test-runner in CI; here they stay framework-free.
 
@@ -33,9 +33,10 @@ export function assertEquals(actual, expected, message) {
 
 /** Replaces window.fetch with a handler; returns a restore function. */
 export function stubFetch(handler) {
-    const original = window.fetch;
-    window.fetch = async (url, options) => handler(url, options);
-    return () => { window.fetch = original; };
+    const original = globalThis.fetch;
+    globalThis.fetch = async (url, options) => handler(url, options);
+    return () => {
+        globalThis.fetch = original; };
 }
 
 /** Builds a minimal fetch Response stand-in carrying a JSON body. */
@@ -69,11 +70,11 @@ export async function run(rootElement) {
         }
     }
     const passed = results.filter((r) => r.ok).length;
-    window.__TEST_RESULTS__ = { passed, total: results.length, results };
+    globalThis.__TEST_RESULTS__ = { passed, total: results.length, results };
     if (rootElement) {
         render(rootElement, results, passed);
     }
-    return window.__TEST_RESULTS__;
+    return globalThis.__TEST_RESULTS__;
 }
 
 // Test names contain markup such as "<customer-form>"; escaping keeps the report

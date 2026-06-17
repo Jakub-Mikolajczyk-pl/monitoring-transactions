@@ -41,17 +41,17 @@ class AppShell extends HTMLElement {
     }
 
     connectedCallback() {
-        window.addEventListener('hashchange', this.#onRouteChange);
+        globalThis.addEventListener('hashchange', this.#onRouteChange);
         this.#onRouteChange();
     }
 
     disconnectedCallback() {
-        window.removeEventListener('hashchange', this.#onRouteChange);
+        globalThis.removeEventListener('hashchange', this.#onRouteChange);
     }
 
     // '#/alerts/<id>' -> details view; default route: alerts (the analyst's home).
     #onRouteChange = () => {
-        const [name = 'alerts', id] = window.location.hash.replace(/^#\//, '').split('/');
+        const [name = 'alerts', id] = globalThis.location.hash.replace(/^#\//, '').split('/');
         let view;
         if (name === 'alerts' && id) {
             view = document.createElement('alert-details');

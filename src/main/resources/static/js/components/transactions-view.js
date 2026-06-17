@@ -1,5 +1,5 @@
 import { api, ApiError } from '../api.js';
-import { esc, fmtDateTime, fmtMoney, shortId } from '../format.js';
+import { esc, fmtDateTime, fmtMoney } from '../format.js';
 import { renderPager, PAGE_SIZE } from '../pagination.js';
 
 // Transaction search (businessId required - mirrors the API contract, REQ-06) and
@@ -7,6 +7,18 @@ import { renderPager, PAGE_SIZE } from '../pagination.js';
 // the source of truth for messages. Styles: /styles/components.css.
 
 const CURRENCIES = ['PLN', 'EUR', 'USD', 'GBP', 'CHF'];
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const AMOUNT_PATTERN = /^\d+([.,]\d{1,2})?$/;
+
+function parseLocalDateTime(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function addError(errors, field, message) {
+    errors.push({ field, message });
+}
 
 class TransactionsView extends HTMLElement {
 
@@ -30,15 +42,19 @@ class TransactionsView extends HTMLElement {
                     <div class="form-grid">
                         <label>businessId
                             <input name="businessId" required maxlength="64" placeholder="np. BANK_A">
+                            <span class="field-error" data-error-for="businessId"></span>
                         </label>
                         <label>customerId <span class="optional">(opcjonalnie)</span>
                             <input name="customerId" placeholder="UUID klienta">
+                            <span class="field-error" data-error-for="customerId"></span>
                         </label>
                         <label>Od <span class="optional">(opcjonalnie)</span>
                             <input name="dateFrom" type="datetime-local">
+                            <span class="field-error" data-error-for="dateFrom"></span>
                         </label>
                         <label>Do <span class="optional">(opcjonalnie)</span>
                             <input name="dateTo" type="datetime-local">
+                            <span class="field-error" data-error-for="dateTo"></span>
                         </label>
                         <button class="btn btn-primary" type="submit">Szukaj</button>
                     </div>
@@ -93,19 +109,16 @@ class TransactionsView extends HTMLElement {
 
     #onSearch = (event) => {
         event.preventDefault();
+        const form = event.target;
         const banner = this.shadowRoot.getElementById('search-banner');
+        this.#clearErrors(form);
         banner.hidden = true;
-        const raw = Object.fromEntries(new FormData(event.target));
-        if (!raw.businessId.trim()) {
-            banner.textContent = 'businessId jest wymagany do wyszukiwania.';
-            banner.className = 'banner banner-warn';
-            banner.hidden = false;
+        const raw = Object.fromEntries(new FormData(form));
+        const { criteria, errors } = this.#validateSearch(raw);
+        if (errors.length > 0) {
+            this.#showValidationErrors(form, banner, errors, 'Popraw kryteria wyszukiwania.');
             return;
         }
-        const criteria = { businessId: raw.businessId.trim() };
-        if (raw.customerId.trim()) criteria.customerId = raw.customerId.trim();
-        if (raw.dateFrom) criteria.dateFrom = new Date(raw.dateFrom).toISOString();
-        if (raw.dateTo) criteria.dateTo = new Date(raw.dateTo).toISOString();
         this.#criteria = criteria;
         this.#runSearch(0); // a fresh search always starts on the first page
     };
@@ -118,9 +131,7 @@ class TransactionsView extends HTMLElement {
             this.#renderResults(pageData);
         } catch (error) {
             if (error instanceof ApiError) {
-                banner.textContent = error.message;
-                banner.className = 'banner banner-error';
-                banner.hidden = false;
+                this.#showApiError(this.shadowRoot.getElementById('search-form'), banner, error);
                 results.innerHTML = '<div class="empty">Popraw kryteria wyszukiwania.</div>';
                 this.shadowRoot.getElementById('pager').innerHTML = '';
             } else {
@@ -134,36 +145,123 @@ class TransactionsView extends HTMLElement {
         const form = event.target;
         const banner = this.shadowRoot.getElementById('register-banner');
         banner.hidden = true;
-        this.shadowRoot.querySelectorAll('#register-form .field-error')
-            .forEach((el) => (el.textContent = ''));
+        this.#clearErrors(form);
         const raw = Object.fromEntries(new FormData(form));
-        const data = {
-            businessId: raw.businessId.trim(),
-            customerId: raw.customerId.trim(),
-            amount: raw.amount === '' ? null : Number(raw.amount.replace(',', '.')),
-            currency: raw.currency,
-            transactionDate: raw.transactionDate ? new Date(raw.transactionDate).toISOString() : null,
-        };
+        const { data, errors } = this.#validateRegistration(raw);
+        if (errors.length > 0) {
+            this.#showValidationErrors(form, banner, errors, 'Popraw dane transakcji.');
+            return;
+        }
         try {
             const transaction = await api.transactions.create(data);
-            banner.textContent = `Zarejestrowano transakcję ${fmtMoney(transaction.amount, transaction.currency)}. Analiza AML działa w tle.`;
+            banner.textContent =
+                `Zarejestrowano transakcję ${fmtMoney(transaction.amount, transaction.currency)} (id: ${transaction.id}). Analiza AML działa w tle.`;
             banner.className = 'banner banner-info';
             banner.hidden = false;
             form.querySelector('[name="amount"]').value = '';
         } catch (error) {
             if (error instanceof ApiError) {
-                error.fieldErrors.forEach(({ field, message }) => {
-                    const slot = this.shadowRoot.querySelector(`#register-form [data-error-for="${field}"]`);
-                    if (slot) slot.textContent = message;
-                });
-                banner.textContent = error.message;
-                banner.className = 'banner banner-error';
-                banner.hidden = false;
+                this.#showApiError(form, banner, error);
             } else {
                 throw error;
             }
         }
     };
+
+    #validateSearch(raw) {
+        const errors = [];
+        const businessId = raw.businessId.trim();
+        const customerId = raw.customerId.trim();
+        const dateFrom = parseLocalDateTime(raw.dateFrom);
+        const dateTo = parseLocalDateTime(raw.dateTo);
+        if (!businessId) {
+            addError(errors, 'businessId', 'businessId jest wymagany.');
+        }
+        if (customerId && !UUID_PATTERN.test(customerId)) {
+            addError(errors, 'customerId', 'Podaj pełny UUID klienta.');
+        }
+        if (raw.dateFrom && !dateFrom) {
+            addError(errors, 'dateFrom', 'Data początkowa ma niepoprawny format.');
+        }
+        if (raw.dateTo && !dateTo) {
+            addError(errors, 'dateTo', 'Data końcowa ma niepoprawny format.');
+        }
+        if (dateFrom && dateTo && dateFrom > dateTo) {
+            addError(errors, 'dateTo', 'Data końcowa nie może być wcześniejsza niż początkowa.');
+        }
+        const criteria = { businessId };
+        if (customerId) criteria.customerId = customerId;
+        if (dateFrom) criteria.dateFrom = dateFrom.toISOString();
+        if (dateTo) criteria.dateTo = dateTo.toISOString();
+        return { criteria, errors };
+    }
+
+    #validateRegistration(raw) {
+        const errors = [];
+        const businessId = raw.businessId.trim();
+        const customerId = raw.customerId.trim();
+        const amountText = raw.amount.trim();
+        const transactionDate = parseLocalDateTime(raw.transactionDate);
+        let amount = null;
+
+        if (!businessId) {
+            addError(errors, 'businessId', 'businessId jest wymagany.');
+        }
+        if (!customerId || !UUID_PATTERN.test(customerId)) {
+            addError(errors, 'customerId', 'Podaj pełny UUID klienta.');
+        }
+        if (!amountText || !AMOUNT_PATTERN.test(amountText)) {
+            addError(errors, 'amount', 'Podaj dodatnią kwotę z maksymalnie 2 miejscami po przecinku.');
+        } else {
+            amount = Number(amountText.replace(',', '.'));
+            if (amount <= 0) {
+                addError(errors, 'amount', 'Podaj dodatnią kwotę z maksymalnie 2 miejscami po przecinku.');
+            }
+        }
+        if (!raw.transactionDate) {
+            addError(errors, 'transactionDate', 'Data transakcji jest wymagana.');
+        } else if (!transactionDate) {
+            addError(errors, 'transactionDate', 'Data transakcji ma niepoprawny format.');
+        } else if (transactionDate.getTime() > Date.now()) {
+            addError(errors, 'transactionDate', 'Data transakcji nie może być z przyszłości.');
+        }
+
+        return {
+            data: {
+                businessId,
+                customerId,
+                amount,
+                currency: raw.currency,
+                transactionDate: transactionDate?.toISOString() ?? null,
+            },
+            errors,
+        };
+    }
+
+    #clearErrors(form) {
+        form.querySelectorAll('.field-error').forEach((el) => (el.textContent = ''));
+    }
+
+    #showValidationErrors(form, banner, errors, message) {
+        this.#showFieldErrors(form, errors);
+        banner.textContent = message;
+        banner.className = 'banner banner-warn';
+        banner.hidden = false;
+    }
+
+    #showApiError(form, banner, error) {
+        this.#showFieldErrors(form, error.fieldErrors);
+        banner.textContent = error.message;
+        banner.className = 'banner banner-error';
+        banner.hidden = false;
+    }
+
+    #showFieldErrors(form, errors) {
+        errors.forEach(({ field, message }) => {
+            const slot = form.querySelector(`[data-error-for="${field}"]`);
+            if (slot) slot.textContent = message;
+        });
+    }
 
     #renderResults(pageData) {
         const container = this.shadowRoot.getElementById('results');
@@ -187,8 +285,8 @@ class TransactionsView extends HTMLElement {
                             <td>${fmtDateTime(t.transactionDate)}</td>
                             <td class="right"><strong>${fmtMoney(t.amount, t.currency)}</strong></td>
                             <td class="mono">${esc(t.businessId)}</td>
-                            <td class="mono muted" title="${esc(t.customerId)}">${shortId(t.customerId)}</td>
-                            <td class="mono muted" title="${esc(t.id)}">${shortId(t.id)}</td>
+                            <td class="mono muted">${esc(t.customerId)}</td>
+                            <td class="mono muted">${esc(t.id)}</td>
                         </tr>
                     `).join('')}
                 </tbody>

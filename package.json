@@ -1,0 +1,14 @@
+{
+  "name": "transaction-monitoring",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "demo": "playwright test --config=playwright.demo.config.ts --headed --project=chromium",
+    "demo:trace": "playwright test --config=playwright.demo.config.ts --headed --project=chromium --trace on --video on",
+    "demo:report": "playwright show-report target/playwright-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.0"
+  }
+}

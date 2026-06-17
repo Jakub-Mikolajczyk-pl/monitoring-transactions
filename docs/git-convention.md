@@ -42,8 +42,8 @@ Refs: REQ-xx[, REQ-yy | ADR-nnnn]
    (traceability wymaganie → commit → kod → test).
 4. Język: komunikaty po angielsku (standard branżowy), dokumentacja po polsku
    (adresat: polski zespół rekrutacyjny).
-5. Commity tworzone z asystą AI niosą stopkę `Co-Authored-By` — spójnie z jawną
-   deklaracją użycia AI w README (wymóg PDF §7).
+5. Użycie AI jest deklarowane jawnie w README, ale commity nie przenoszą autorstwa na
+   narzędzie. Źródłem traceability są stopki `Refs:` oraz ADR-y.
 
 ## Przykład
 
@@ -55,5 +55,4 @@ A single alert per transaction (DB-enforced) keeps the analyst queue free
 of duplicates when an event is redelivered.
 
 Refs: REQ-08, REQ-09, ADR-0006, ADR-0007
-Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
 ```

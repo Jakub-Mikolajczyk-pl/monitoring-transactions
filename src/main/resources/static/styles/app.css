@@ -37,7 +37,7 @@ body {
     margin: 0;
     background: var(--color-bg);
     color: var(--color-text);
-    font-family: var(--font);
+    font-family: var(--font), serif;
     font-size: 15px;
     line-height: 1.5;
 }

@@ -1,5 +1,5 @@
 import { api, ApiError } from '../api.js';
-import { esc, fmtDateTime, shortId } from '../format.js';
+import { esc, fmtDateTime } from '../format.js';
 import { renderPager, PAGE_SIZE } from '../pagination.js';
 
 // Two cooperating components: <customer-form> emits a composed 'customer-registered'
@@ -77,8 +77,6 @@ class CustomerForm extends HTMLElement {
 
 class CustomersView extends HTMLElement {
 
-    #page = 0;
-
     constructor() {
         super();
         const shadow = this.attachShadow({ mode: 'open' });
@@ -103,7 +101,6 @@ class CustomersView extends HTMLElement {
     }
 
     async #load(page) {
-        this.#page = page;
         const container = this.shadowRoot.getElementById('list');
         const result = await api.customers.list({ page, size: PAGE_SIZE });
         if (result.content.length === 0) {
@@ -122,7 +119,7 @@ class CustomersView extends HTMLElement {
                             <td><strong>${esc(c.firstName)} ${esc(c.lastName)}</strong></td>
                             <td class="mono">${esc(c.businessId)}</td>
                             <td class="muted">${fmtDateTime(c.createdAt)}</td>
-                            <td class="mono muted" title="${esc(c.id)}">${shortId(c.id)}</td>
+                            <td class="mono muted">${esc(c.id)}</td>
                         </tr>
                     `).join('')}
                 </tbody>

@@ -73,9 +73,10 @@ class DetectionIntegrationTest {
                 assertThat(alertsFor(transactionId)).hasSize(1));
 
         var alert = alertsFor(transactionId).getFirst();
-        assertThat(alert.get("status")).isEqualTo("OPEN");
-        assertThat(alert.get("reason")).isEqualTo("SUSPICIOUS_AMOUNT");
-        assertThat(alert.get("businessId")).isEqualTo("DET_A");
+        assertThat(alert)
+                .containsEntry("status", "OPEN")
+                .containsEntry("reason", "SUSPICIOUS_AMOUNT")
+                .containsEntry("businessId", "DET_A");
     }
 
     @Test
@@ -107,7 +108,8 @@ class DetectionIntegrationTest {
 
         await().atMost(Duration.ofSeconds(5)).untilAsserted(() ->
                 assertThat(alertsFor(sixthId)).hasSize(1));
-        assertThat(alertsFor(sixthId).getFirst().get("reason")).isEqualTo("HIGH_FREQUENCY");
+        assertThat(alertsFor(sixthId).getFirst())
+                .containsEntry("reason", "HIGH_FREQUENCY");
 
         // Earlier transactions stay clean: each window is anchored to its own
         // business time, so the sixth transaction (14:30) lies outside every earlier

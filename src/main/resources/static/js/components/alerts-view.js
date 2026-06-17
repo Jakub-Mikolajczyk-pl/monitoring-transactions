@@ -1,5 +1,5 @@
 import { api } from '../api.js';
-import { esc, fmtDateTime, shortId } from '../format.js';
+import { esc, fmtDateTime } from '../format.js';
 import { renderPager, PAGE_SIZE } from '../pagination.js';
 
 // Analyst's queue: alerts filtered by status, newest first. Row click navigates
@@ -16,7 +16,6 @@ const STATUS_TABS = [
 class AlertsView extends HTMLElement {
 
     #status = 'OPEN';
-    #page = 0;
 
     constructor() {
         super();
@@ -51,7 +50,6 @@ class AlertsView extends HTMLElement {
     }
 
     async #load(page) {
-        this.#page = page;
         this.shadowRoot.querySelectorAll('.tabs .btn').forEach((b) =>
             b.classList.toggle('active', b.dataset.status === this.#status));
         const container = this.shadowRoot.getElementById('list');
@@ -73,7 +71,7 @@ class AlertsView extends HTMLElement {
                             <td>${a.reason.split(',').map((r) => `<span class="chip">${esc(r)}</span>`).join('')}</td>
                             <td class="mono">${esc(a.businessId)}</td>
                             <td class="muted">${fmtDateTime(a.createdAt)}</td>
-                            <td class="mono muted" title="${esc(a.transactionId)}">${shortId(a.transactionId)}</td>
+                            <td class="mono muted">${esc(a.transactionId)}</td>
                             <td class="right"><a href="#/alerts/${esc(a.id)}">Szczegóły →</a></td>
                         </tr>
                     `).join('')}
@@ -81,7 +79,7 @@ class AlertsView extends HTMLElement {
             </table>
         `;
         container.querySelectorAll('tbody tr').forEach((row) =>
-            row.addEventListener('click', () => (window.location.hash = `#/alerts/${row.dataset.id}`)));
+            row.addEventListener('click', () => (globalThis.location.hash = `#/alerts/${row.dataset.id}`)));
         renderPager(this.shadowRoot.getElementById('pager'), result, (p) => this.#load(p));
     }
 }
