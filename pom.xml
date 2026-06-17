@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>pl.jakubmikolajczyk</groupId>
 	<artifactId>transaction-monitoring</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>transaction-monitoring</name>
 	<description>Transaction monitoring (AML) recruitment task</description>
 	<url/>
